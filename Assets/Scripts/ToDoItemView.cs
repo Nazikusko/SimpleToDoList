@@ -1,11 +1,7 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using TMPro;
-using UnityEditor.U2D.Path.GUIFramework;
 using UnityEngine;
 using UnityEngine.UI;
-using static ToDoListController;
 
 public class ToDoItemView : MonoBehaviour
 {
@@ -15,7 +11,7 @@ public class ToDoItemView : MonoBehaviour
     [SerializeField] private Image _ItemBackgroundImage;
     [SerializeField] private Button _itemButton;
 
-    private ToDoListController.TaskData _taskData;
+    private TaskDataModel _taskData;
 
     void Awake()
     {
@@ -28,7 +24,7 @@ public class ToDoItemView : MonoBehaviour
         //_itemButton.onClick.RemoveAllListeners();
     }
 
-    public void Init(int index, ToDoListController.TaskData data, Action<bool> onClickAction)
+    public void Init(int index, TaskDataModel data, Action<bool> onClickAction)
     {
         _taskData = data;
         _indexText.text = (index + 1).ToString();

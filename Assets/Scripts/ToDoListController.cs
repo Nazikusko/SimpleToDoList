@@ -1,28 +1,24 @@
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.UI;
 
-public class ToDoListController : MonoBehaviour
+public class ToDoListController : Singleton<ToDoListController>
 {
     [SerializeField] private ToDoItemView _toDoItemViewPrefab;
     [SerializeField] private Transform _contentHolder;
     [SerializeField] private CreateListController _createListController;
+    [SerializeField] private Button _createNewListButton;
 
-    private List<TaskData> _tasks;
+    private List<TaskDataModel> _tasks = new List<TaskDataModel>();
     private List<ToDoItemView> _tasksView = new List<ToDoItemView>();
 
-    public void UpdateList()
-    {
-        for (int i = 0; i < _contentHolder.childCount; i++)
-        {
-            Destroy(_contentHolder.GetChild(i).gameObject);
-        }
+    public bool ListHaveTasks => _tasks.Count > 0;
 
-        for (int i = 0; i < _tasks.Count; i++)
-        {
-            var view = Instantiate(_toDoItemViewPrefab, _contentHolder);
-            _tasksView.Add(view);
-            view.Init(i, _tasks[i], null);
-        }
+    protected override void DoAwake()
+    {
+        _createListController.okButtonClickAction += OkButtonClickHandler;
+        _createNewListButton.onClick.AddListener(() => _createListController.gameObject.SetActive(true));
     }
 
     void Start()
@@ -37,14 +33,8 @@ public class ToDoListController : MonoBehaviour
         else
         {
             _createListController.gameObject.SetActive(true);
-            _createListController.okButtonClickAction += OkButtonClickHandler;
-        }
-    }
 
-    private void OkButtonClickHandler(List<TaskData> tasksData)
-    {
-        _tasks = tasksData;
-        UpdateList();
+        }
     }
 
     void OnApplicationQuit()
@@ -52,9 +42,36 @@ public class ToDoListController : MonoBehaviour
         SaveManager.SaveDataToDisk(_tasks);
     }
 
-    public class TaskData
+    void OnApplicationFocus(bool hasFocus)
     {
-        public string taskText;
-        public bool isTaskDone;
+        if (!hasFocus)
+            SaveManager.SaveDataToDisk(_tasks);
+    }
+
+    void OnApplicationPause(bool pauseStatus)
+    {
+        if (pauseStatus)
+            SaveManager.SaveDataToDisk(_tasks);
+    }
+
+    private void OkButtonClickHandler(List<TaskDataModel> tasksData)
+    {
+        _tasks = tasksData;
+        UpdateList();
+    }
+
+    public void UpdateList()
+    {
+        for (int i = 0; i < _contentHolder.childCount; i++)
+        {
+            Destroy(_contentHolder.GetChild(i).gameObject);
+        }
+
+        for (int i = 0; i < _tasks.Count; i++)
+        {
+            var view = Instantiate(_toDoItemViewPrefab, _contentHolder);
+            _tasksView.Add(view);
+            view.Init(i, _tasks[i], null);
+        }
     }
 }
