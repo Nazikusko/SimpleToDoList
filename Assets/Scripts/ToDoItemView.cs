@@ -12,31 +12,27 @@ public class ToDoItemView : MonoBehaviour
     [SerializeField] private Button _itemButton;
 
     private TaskDataModel _taskData;
-
-    void Awake()
-    {
-
-    }
+    private Action<TaskDataModel> _valueChangedAction;
 
     void OnDestroy()
     {
-        //_toggle.onValueChanged.RemoveAllListeners();
-        //_itemButton.onClick.RemoveAllListeners();
+        _itemButton.onClick.RemoveAllListeners();
     }
 
-    public void Init(int index, TaskDataModel data, Action<bool> onClickAction)
+    public void Init(int index, TaskDataModel data, Action<TaskDataModel> onValueChangeAction)
     {
         _taskData = data;
         _indexText.text = (index + 1).ToString();
         _toggle.isOn = data.isTaskDone;
         SetDoneTask(data.isTaskDone);
         _taskText.text = data.taskText;
+        _valueChangedAction = onValueChangeAction;
 
         _itemButton.onClick.AddListener(() =>
         {
             _taskData.isTaskDone = !_taskData.isTaskDone;
             SetDoneTask(_taskData.isTaskDone);
-            onClickAction?.Invoke(_taskData.isTaskDone);
+            _valueChangedAction?.Invoke(_taskData);
         });
     }
 
@@ -44,6 +40,7 @@ public class ToDoItemView : MonoBehaviour
     {
         _ItemBackgroundImage.color = isDone ? Color.green : Color.white;
         _taskData.isTaskDone = isDone;
+
         _toggle.isOn = isDone;
     }
 }
