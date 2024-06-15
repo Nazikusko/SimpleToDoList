@@ -14,6 +14,8 @@ public class ToDoItemView : MonoBehaviour
     private TaskDataModel _taskData;
     private Action<TaskDataModel> _valueChangedAction;
 
+    public TaskDataModel Model => _taskData;
+
     void OnDestroy()
     {
         _itemButton.onClick.RemoveAllListeners();
@@ -30,9 +32,19 @@ public class ToDoItemView : MonoBehaviour
 
         _itemButton.onClick.AddListener(() =>
         {
-            _taskData.isTaskDone = !_taskData.isTaskDone;
-            SetDoneTask(_taskData.isTaskDone);
-            _valueChangedAction?.Invoke(_taskData);
+            if (_taskData.isTaskDone)
+            {
+                UiManager.Instance.ShowAdditional<DialogPopUpWindowMediator>(UiElementType.PopUp,
+                    new DialogPopUpWindowMediatorParameters()
+                    {
+                        Message = "Are you sure you want to unmark this task as completed?",
+                        OkButtonAction = ChangeValue
+                    });
+            }
+            else
+            {
+                ChangeValue();
+            }
         });
     }
 
@@ -42,5 +54,12 @@ public class ToDoItemView : MonoBehaviour
         _taskData.isTaskDone = isDone;
 
         _toggle.isOn = isDone;
+    }
+
+    private void ChangeValue()
+    {
+        _taskData.isTaskDone = !_taskData.isTaskDone;
+        SetDoneTask(_taskData.isTaskDone);
+        _valueChangedAction?.Invoke(_taskData);
     }
 }
